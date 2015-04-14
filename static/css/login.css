@@ -1,0 +1,25 @@
+.centered { 
+  position:absolute;
+  z-index: 100;  
+  top:50%;  
+  left:50%;  
+  width:380px;  
+  height:143px;
+  display: inline-block;
+  margin-left: -200px;
+  margin-top: -112px;
+
+  border-radius: 5px;
+  border: 2px solid #000000;
+  padding: 20px; 
+
+}
+
+.logo {
+    float: left;
+}
+
+.content {
+    float: right;
+    margin:8px 0 0 5px;
+}
