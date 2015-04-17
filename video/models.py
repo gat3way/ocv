@@ -44,6 +44,7 @@ class LocalSource(models.Model):
 class Source(models.Model):
     url = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
+    active = models.BooleanField(default=True)
     device = models.ForeignKey(LocalSource, related_name="device", blank=True, null=True)
     raw_sink = models.ForeignKey(Sink, related_name="raw")
     overlay_sink = models.ForeignKey(Sink, related_name="overlay")
@@ -52,7 +53,10 @@ class Source(models.Model):
     motion_threshold = models.IntegerField(default=15)
     from detect.models import Recognizer as Recognizer
     recognizer = models.ForeignKey(Recognizer, related_name="recognizer", blank=True, null=True)
-
+    top_blank_pixels = models.IntegerField(default=0)
+    bottom_blank_pixels = models.IntegerField(default=0)
+    left_blank_pixels = models.IntegerField(default=0)
+    right_blank_pixels = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
