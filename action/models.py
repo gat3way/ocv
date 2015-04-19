@@ -5,6 +5,7 @@ from .signals import event_logged
 from sentinel.settings import common as settings
 from django.utils import timezone
 import datetime
+import random
 
 # Create your models here.
 
@@ -22,31 +23,41 @@ class Event(models.Model):
     face = models.ForeignKey(Face,related_name="face", blank=True, null=True)
     source = models.ForeignKey(Source, related_name="source", blank=True, null=True)
     image = models.CharField(max_length=64, blank=True, null=True)
+    video = models.CharField(max_length=64, blank=True, null=True)
     user = models.ForeignKey(
         getattr(settings, "AUTH_USER_MODEL", "auth.User"),
         null=True,
+        blank=True,
         on_delete=models.SET_NULL
     )
     comment = models.CharField(max_length=200, null=True, blank=True)
     extra = models.CharField(max_length=200, null=True, blank=True)
+    duration_seconds = models.IntegerField(null=True, blank=True)
 
     #def save:
     #    super(Event,self).save(*args, **kwargs)
 
-    def get_url(self):
+    def get_s_url(self):
         return '<a href="/static/snapshots/{}" target="_blank">Snapshot</a>'.format(self.image)
+    def get_v_url(self):
+        html = '<a href="http://localhost:8090/snapshot.html?snapshot={0}&token={1}" target="_blank">Watch</a>'.format(self.video,random.random()*65535)
+        html += '&nbsp;|&nbsp;'
+        html += '<a href="/static/snapshots/{}" target="_blank">Download</a>'.format(self.video)
+        return html
 
+    def __str__(self):
+        return self.name
 
     class Meta:
         ordering = ["-timestamp"]
 
 
-def log(user, name, e_type, image=None, face=None, source=None, comment=None, extra=None, time_offset=0):
+def log(user, name, e_type, image=None, face=None, source=None, comment=None, extra=None, time_offset=0, video=None):
     if (user is not None and not user.is_authenticated()):
         user = None
     if extra is None:
-        extra = {}
-    event = Event.objects.create(user=user, name=name,e_type=e_type,image=image,face=face,source=source,comment=comment, extra=extra, timestamp = datetime.datetime.now() + datetime.timedelta(0,time_offset))
+        extra = ""
+    event = Event.objects.create(user=user, name=name,e_type=e_type,image=image,face=face,source=source,comment=comment, extra=extra, timestamp = datetime.datetime.now() + datetime.timedelta(0,time_offset), video=video)
     event_logged.send(sender=Event, event=event)
     return event
 
