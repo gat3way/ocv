@@ -4,10 +4,11 @@ from detect.models import Face
 from .signals import event_logged
 from sentinel.settings import common as settings
 from django.utils import timezone
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
 import datetime
 import random
-
-# Create your models here.
+import os
 
 
 
@@ -46,7 +47,7 @@ class Event(models.Model):
         return html
 
     def __str__(self):
-        return self.name
+        return self.name + " at " + self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
     class Meta:
         ordering = ["-timestamp"]
@@ -76,3 +77,14 @@ class Action(models.Model):
     def __str__(self):
         return self.name
 
+
+@receiver(pre_delete, sender=Event)
+def _event_delete(sender, instance, **kwargs):
+    image = instance.image
+    video = instance.video
+    image_path = filename = os.path.join(settings.PROJECT_ROOT,"run","snapshots",image)
+    if os.path.isfile(image_path):
+        os.remove(image_path)
+    video_path = filename = os.path.join(settings.PROJECT_ROOT,"run","snapshots",video)
+    if os.path.isfile(video_path):
+        os.remove(video_path)

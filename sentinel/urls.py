@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     url(r'^admin_tools/', include('admin_tools.urls')),
     url(r'^$', 'sentinel.views.homepage', name='homepage'),
     (r'^', include('detect.urls')),
+    (r'^', include('video.urls')),
 ) 

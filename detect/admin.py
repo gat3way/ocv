@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Recognizer, Face
+from .models import FaceRecognizer, SmokeRecognizer, Face
 from .forms import FacesForm
 
 class FaceAdmin(admin.ModelAdmin):
@@ -9,6 +9,7 @@ class FaceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Face, FaceAdmin)
-admin.site.register(Recognizer)
+admin.site.register(FaceRecognizer)
+admin.site.register(SmokeRecognizer)
 
 # Register your models here.

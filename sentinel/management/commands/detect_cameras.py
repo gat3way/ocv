@@ -36,7 +36,7 @@ class Command(BaseCommand):
                     fps = 0
 
                 url = str(nr)
-                name = "Camera " + str(nr) + ' ('+ str(width)+'x'+str(height)+' @ '+str(fps)+' fps)\n'
+                name = "Camera " + str(nr) + ' ('+ str(width)+'x'+str(height)+' @ '+str(fps)+' fps)'
                 dev,created = LocalSource.objects.get_or_create(name=name,fps=fps,url=url,height=height,width=width)
                 nr += 1
                 self.stdout.write('Detected device ' + name + '('+ str(width)+'x'+str(height)+' @ '+str(fps)+' fps)\n')

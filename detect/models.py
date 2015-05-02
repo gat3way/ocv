@@ -1,6 +1,5 @@
 from django.db import models
 from django.forms import forms
-from video.models import Storage as Storage
 import cv2
 import cv2.cv
 import os
@@ -35,20 +34,27 @@ class ContentTypeRestrictedFileField(models.FileField):
         return data
 
 
-class Recognizer(models.Model):
-    TYPES = (
-        ('facial', 'Facial Recognition'),
-    )
+class FaceRecognizer(models.Model):
     name = models.CharField(max_length=200)
-    rtype = models.CharField(max_length=20, choices=TYPES)
     def __str__(self):
         return self.name
+
+
+class SmokeRecognizer(models.Model):
+    name = models.CharField(max_length=200)
+    min_threshold = models.IntegerField(default=10)
+    max_threshold = models.IntegerField(default=30)
+    exposition = models.IntegerField(default=20)
+
+    def __str__(self):
+        return self.name
+
 
 
 class Face(models.Model):
     name = models.CharField(max_length=200)
     active = models.BooleanField()
-    recognizer = models.ForeignKey(Recognizer, related_name="f_recognizer")
+    recognizer = models.ForeignKey(FaceRecognizer, related_name="f_recognizer")
     training_video = ContentTypeRestrictedFileField(
             content_types=['video/x-msvideo', 'video/mp4', 'video/x-flv', 'video/mpeg'],
             model_name = name,
@@ -140,8 +146,12 @@ class Face(models.Model):
 
 
         # Check if name is changed - so that we rename directory as needed
-        old_instance = Face.objects.get(pk=self.pk)
-        if old_instance.name != self.name:
+        try:
+            old_instance = Face.objects.get(pk=self.pk)
+        except Exception:
+            old_instance = None
+
+        if old_instance and old_instance.name != self.name:
             fn_dir = os.path.join(settings.PROJECT_ROOT,"run","models")
             fn_name = self.name
             path = os.path.join(fn_dir, fn_name)

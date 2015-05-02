@@ -15,6 +15,9 @@ import numpy as np
 import urlparse
 import threading
 import random
+import hashlib
+import signal
+
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
@@ -54,7 +57,11 @@ class CamHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type','multipart/x-mixed-replace; boundary=--jpgboundary')
             self.end_headers()
+            fn = 0
+            hashed = ""
+            nosignal = False
             while True:
+
                 try:
                     if params.has_key("snapshot"):
                         res,img = dev.read()
@@ -66,6 +73,25 @@ class CamHandler(BaseHTTPRequestHandler):
 
                     r,buf=cv2.imencode(".jpg",img)
                     JpegData=buf.tostring()
+
+                    if (fn%30)==0:
+                        hasher = hashlib.md5()
+                        hasher.update(JpegData)
+                        hashed_new = hasher.hexdigest()
+                        if hashed_new==hashed:
+                            nosignal = True
+                        else:
+                            nosignal = False
+                        hashed = hashed_new
+                    fn += 1
+
+                    if nosignal:
+                        empty = np.zeros((img.shape[0],img.shape[1],3), np.uint8)
+                        cv2.putText(empty,'No Signal', (int((260*img.shape[0])/480), int((230*img.shape[1])/640)), cv2.FONT_HERSHEY_PLAIN,1.5,(255, 255, 255))
+                        r,buf=cv2.imencode(".jpg",empty)
+                        JpegData=buf.tostring()
+
+
                     self.wfile.write("--jpgboundary")
                     self.send_header('Content-type','image/jpeg')
                     self.send_header('Content-length',str(len(JpegData)))
@@ -101,13 +127,19 @@ class CamHandler(BaseHTTPRequestHandler):
             return
 
 
+# Signal handler for SIGBUS (which would occasionally get thrown while trying to read the mmaped file)
+def sigbus_handler(signum, frame):
+    print "SIGBUS"
 
 
 
 class Command(BaseCommand):
     help = 'Stream mjpeg'
 
+
     def handle(self, *args, **options):
+        signal.signal(signal.SIGBUS, sigbus_handler)
+
         try:
             server = ThreadedHTTPServer(('',8090),CamHandler)
             print "server started"

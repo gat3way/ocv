@@ -1,9 +1,11 @@
+{% load staticfiles %}
+
 <div style="position:relative;margin-left: 110px;margin-right: 200px" >
 <script>
 var loc = document.getElementById('id_name').value;
 for (a=1;a<=30;a++)
 {
-    document.write("<img src='/static/models/" + loc + "/" + a + ".png' style='margin-top:3px;margin-left:3px' onerror=" + '"this.src=' + "'" +"/static/img/transparent.png" + "'" + '"></img>');
+    document.write("<img src='{% static "models/" %}" + loc + "/" + a + ".png' style='margin-top:3px;margin-left:3px' onerror=" + '"this.src=' + "'" +"{% static "img/transparent.png" %}" + "'" + '"></img>');
 
 }
 </script>

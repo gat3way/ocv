@@ -1,6 +1,10 @@
 from django.db import models
 import sentinel.settings.common as settings
 import os
+from detect.models import FaceRecognizer as FaceRecognizer
+from detect.models import SmokeRecognizer as SmokeRecognizer
+
+
 
 # Create your models here.
 
@@ -47,24 +51,29 @@ class Source(models.Model):
     active = models.BooleanField(default=True)
     device = models.ForeignKey(LocalSource, related_name="device", blank=True, null=True)
     raw_sink = models.ForeignKey(Sink, related_name="raw")
-    overlay_sink = models.ForeignKey(Sink, related_name="overlay")
+    overlay_sink = models.ForeignKey(Sink, related_name="overlay", blank=True, null=True)
     storage = models.ForeignKey(Storage, related_name="storage")
-    motion_detection = models.BooleanField(default=True)
-    motion_threshold = models.IntegerField(default=15)
-    from detect.models import Recognizer as Recognizer
-    recognizer = models.ForeignKey(Recognizer, related_name="recognizer", blank=True, null=True)
+    store_archive = models.BooleanField(default=True)
     top_blank_pixels = models.IntegerField(default=0)
     bottom_blank_pixels = models.IntegerField(default=0)
     left_blank_pixels = models.IntegerField(default=0)
     right_blank_pixels = models.IntegerField(default=0)
 
+
+
+    motion_detection = models.BooleanField(default=True)
+    motion_threshold = models.IntegerField(default=15)
+    motion_exclude = models.CharField(max_length=1024, editable=False, default="", blank=True, null=True)
+    face_recognizer = models.ForeignKey(FaceRecognizer, related_name="face_recognizer", blank=True, null=True)
+    smoke_detector = models.ForeignKey(SmokeRecognizer, related_name="smoke_recognizer", blank=True, null=True)
+
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        if self.device:
-            device = LocalSource.objects.get(name=self.device)
-            self.url = device.url
+        #if self.device:
+        #    device = LocalSource.objects.get(name=self.device)
+        #    self.url = device.url
         super(Source,self).save(*args, **kwargs)
         command = os.path.join(settings.PROJECT_ROOT,"manage.py")
         os.system(command + " daemon stop")
