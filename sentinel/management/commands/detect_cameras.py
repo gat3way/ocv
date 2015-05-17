@@ -3,6 +3,7 @@ from video.models import LocalSource as LocalSource
 import cv2
 from cv2 import cv
 import sys
+import backend.discovery.upnp as upnp
 
 class Command(BaseCommand):
     help = 'Detect available cameras connected to the system'
@@ -40,3 +41,13 @@ class Command(BaseCommand):
                 dev,created = LocalSource.objects.get_or_create(name=name,fps=fps,url=url,height=height,width=width)
                 nr += 1
                 self.stdout.write('Detected device ' + name + '('+ str(width)+'x'+str(height)+' @ '+str(fps)+' fps)\n')
+
+
+        # Detect UPnP stuff
+        locations = upnp.discovery()
+        devices = upnp.get_devices(locations)
+        for dev in devices:
+            matched = upnp.match(dev)
+            if matched:
+                print matched["friendlyname"], matched["videourl"]
+                upnp.create_device(matched)

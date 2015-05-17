@@ -1,12 +1,23 @@
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
 from video.models import LocalSource
 from video.models import Source
+from video.models import Sink
 import sentinel.settings.common as settings
 import cv2
 import os
 import mmap
 import numpy as np
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+import json
+import socket
+import urllib2
+from video.utils import request_get_url, request_post_url, get_localsource
+
 # Create your views here.
 
 
@@ -17,7 +28,7 @@ def get_url(request):
         url = None
         try:
             lsrc = LocalSource.objects.get(name=src)
-            url = lsrc.url
+            url = lsrc.videourl
         except Exception:
             url = ""
         if url:
@@ -82,3 +93,223 @@ def get_image(request):
 
     else:
         return HttpResponse("")
+
+
+# Get image by url
+def grid_view(request):
+    return render_to_response('video/gridview.html',
+                         {},
+                         context_instance=RequestContext(request))
+
+
+
+# Get grid layout
+def grid_layout_get(request):
+    layout = request.session.get('grid_layout', False)
+    if layout:
+        return HttpResponse(layout)
+    else:
+        # Initial widgets
+        # TODO: setup initial value (dbsettings?)
+        initial = { "widgets" : [] }
+        for a in range(0,24):
+            initial["widgets"].append({"h":1,"w":1,"sink":""})
+        return HttpResponse(json.dumps(initial))
+
+# Set grid layout
+@csrf_exempt
+def grid_layout_set(request):
+    layout = request.body
+    if layout:
+        # TODO: json validation
+        request.session['grid_layout']=layout
+    return HttpResponse("")
+
+
+# Get json list of sinks
+def get_sinks(request):
+    sinks = Sink.objects.all()
+    sinkdata = { "names": [] }
+    for sink in sinks:
+        sinkdata["names"].append(sink.name)
+    return HttpResponse(json.dumps(sinkdata))
+
+
+
+##### PAN TILT ZOOM CONTROLS ######
+
+
+
+
+def cam_pan_right(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    step = request.GET.get('step', None)
+    localsource = get_localsource(src,srctype)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_right, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_right, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+
+def cam_pan_left(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    localsource = get_localsource(src,srctype)
+    step = request.GET.get('step', None)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_left, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_left, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+
+def cam_pan_up(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    step = request.GET.get('step', None)
+    localsource = get_localsource(src,srctype)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_up, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_up, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+
+def cam_pan_bottom(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    localsource = get_localsource(src,srctype)
+    step = request.GET.get('step', None)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_bottom, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_bottom, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+
+
+def cam_pan_bottom_left(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    localsource = get_localsource(src,srctype)
+    step = request.GET.get('step', None)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_bottom_left, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_bottom_left, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+def cam_pan_bottom_right(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    localsource = get_localsource(src,srctype)
+    step = request.GET.get('step', None)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_bottom_right, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_bottom_right, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+
+def cam_pan_up_left(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    step = request.GET.get('step', None)
+    localsource = get_localsource(src,srctype)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_up_left, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_up_left, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")
+
+
+def cam_pan_up_right(request):
+    socket.setdefaulttimeout(10)
+
+    src = request.GET.get('src', None)
+    srctype = request.GET.get('srctype', None)
+    step = request.GET.get('step', None)
+    localsource = get_localsource(src,srctype)
+
+    if localsource and localsource.ptz_right:
+        if localsource.ptz_control=="post":
+            res = request_post_url(localsource.ptz_up_right, localsource.url, str(step), localsource.username, localsource.password, localsource.ptz_right_data)
+            return HttpResponse(res)
+        elif localsource.ptz_control=="get":
+            res = request_get_url(localsource.ptz_up_right, localsource.url, str(step), localsource.username, localsource.password)
+            return HttpResponse(res)
+        else:
+            return HttpResponse("unknown method")
+    else:
+        return HttpResponse("No url")

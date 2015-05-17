@@ -4,11 +4,18 @@
 var select = document.getElementById('id_device');
 var urlbox = document.getElementById('id_url');
 var canvas = document.getElementById('zone_canvas');
+var img = document.getElementById('zone_img');
+var motionthreshold = document.getElementById('id_motion_threshold');
+var motionexclude = document.getElementById('id_motion_exclude');
+
+var rawsrc = select.options[select.selectedIndex].innerHTML;
 var exclude_input = document.getElementById('id_motion_exclude');
 var ctx = canvas.getContext('2d');
-ctx.fillStyle="rgba(255, 0, 0, 0.25)";
 var drag = false;
 var rect = {};
+var is_motion_test = false;
+
+ctx.fillStyle="rgba(255, 0, 0, 0.25)";
 
 exclude_input.value = decodeURI(exclude_input.value);
 if (isEmpty(exclude_input.value))
@@ -20,7 +27,14 @@ var background = new Image();
 background.src = "/video/get_image?url="+encodeURIComponent(urlbox.value);
 background.onload = draw_bg
 
-
+motionthreshold.onchange=function(e) 
+{
+    if (is_motion_test)
+    {
+        // URL!!!
+        img.src = "http://localhost:8090/" + encodeURIComponent(rawsrc) + ".vidtest?motion_test=1&motion_threshold=" + motionthreshold.value + "&motion_exclude=" + encodeURIComponent(JSON.stringify(rects))+"&token="+Math.random();
+    }
+}
 
 
 
@@ -145,6 +159,23 @@ function change_url2()
 }
 
 
+function motion_test()
+{
+    canvas.style.display = "none";
+    img.style.display = "block";
+    // TODO: fix URL
+    img.src = "http://localhost:8090/" + encodeURIComponent(rawsrc) + ".vidtest?motion_test=1&motion_threshold=" + motionthreshold.value + "&motion_exclude=" + encodeURIComponent(JSON.stringify(rects))+"&token="+Math.random();
+    is_motion_test = true;
+}
+
+function cancel_motion_test()
+{
+    img.src="";
+    img.style.display = "none";
+    canvas.style.display = "block";
+    is_motion_test = false;
+}
+
 
 
 
@@ -174,3 +205,5 @@ document.getElementById("id_bottom_blank_pixels").onkeyup = draw_bg;
 document.getElementById("id_left_blank_pixels").onkeyup = draw_bg;
 document.getElementById("id_right_blank_pixels").onkeyup = draw_bg;
 //document.getElementById("camcontainer").onmouseup = mouseup;
+
+

@@ -51,7 +51,7 @@ class CustomIndexDashboard(Dashboard):
 
         self.children.append(modules.ModelList(
             _('Video I/O'),
-            models=('video.models.Source','video.models.Sink','video.models.Storage'),
+            models=('video.models.LocalSource', 'video.models.Source','video.models.Sink','video.models.Storage'),
         ))
 
         self.children.append(modules.ModelList(

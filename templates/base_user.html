@@ -1,0 +1,134 @@
+{% load staticfiles %}
+
+
+<head>
+  <link rel="stylesheet" href="{% static "admin_tools/css/jquery/jquery-ui.css" %}" />
+  <link rel="stylesheet" href="{% static "font-awesome/css/font-awesome.min.css" %}">
+  <link rel="stylesheet" href="{% static "css/jmenu.css" %}" />
+  <script src="{% static "admin_tools/js/jquery/jquery.min.js" %}"></script>
+  <script src="{% static "admin_tools/js/jquery/jquery-ui.min.js" %}"></script>
+  <script src="{% static "js/jMenu.jquery.min.js" %}"></script>
+</head>
+
+
+<body bgcolor="#000000">
+{% if user.is_authenticated %}
+<!--
+    <p>
+    Welcome, {{ user.username }}
+    <a href="/accounts/password_change">[Change Password]</a>
+    <a href="/accounts/logout">[logout]</a>
+    </p>
+-->
+{% else %}
+<!--
+    <p>Welcome, Guest <a href="/accounts/login">[login]</a></p>
+-->
+{% endif %}
+<div>
+<div id="main_menu" style="position:absolute;left:10%">
+
+<ul id="jMenu">
+    <li>
+        <a>Monitor</a>
+        <ul>
+            <li>
+                <a>Category 1.2</a>
+                <ul>
+                    <li><a>Category 1.3</a></li>
+                    <li><a>Category 1.3</a></li>
+                    <li><a>Category 1.3</a></li>
+                    <li><a>Category 1.3</a></li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+        <li>
+        <a>Events</a>
+        <ul>
+            <li>
+                <a>Category 2.2</a>
+            </li>
+            <li>
+                <a>Category 2.2</a>
+            </li>
+        </ul>
+    </li>
+
+    <li>
+        <a>Archive</a>
+        <ul>
+            <li><a>Category 4.2</a></li>
+            <li><a>Category 4.2</a></li>
+            <li>
+                <a>Category 4.2</a>
+                <ul>
+                    <li><a>Category 4.3</a></li>
+                    <li><a>Category 4.3</a></li>
+                    <li><a>Category 4.3</a></li>
+                    <li><a>Category 4.3</a></li>
+                </ul>
+            </li>
+            <li><a>Category 4.2</a></li>
+        </ul>
+    </li>
+        <li>
+        <a>System</a>
+        <ul>
+            <li>
+                <a>Category 5.2</a>
+                <ul>
+                    <li><a>Category 5.3</a></li>
+                    <li><a>Category 5.3</a></li>
+                    <li><a>Category 5.3</a></li>
+                    <li><a>Category 5.3</a></li>
+                </ul>
+            </li>
+            <li><a>Category 5.2</a></li>
+            <li><a>Category 5.2</a></li>
+            <li><a>Category 5.2</a></li>
+        </ul>
+    </li>
+        <li><a>Admin</a></li>
+        <li>
+        <a>Help</a>
+        <ul>
+            <li><a>Category 7.2</a></li>
+            <li><a>Category 7.2</a></li>
+            <li><a>Category 7.2</a></li>
+            <li><a>Category 7.2</a></li>
+        </ul>
+    </li>
+</ul>
+
+
+
+
+
+</div>
+<div style="height:50px;"></div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#jMenu").jMenu({
+            openClick : false,
+            ulWidth :'auto',
+             TimeBeforeOpening : 100,
+            TimeBeforeClosing : 11,
+            animatedText : false,
+            paddingLeft: 1,
+            effects : {
+                effectSpeedOpen : 150,
+                effectSpeedClose : 150,
+                effectTypeOpen : 'slide',
+                effectTypeClose : 'slide',
+                effectOpen : 'swing',
+                effectClose : 'swing'
+            }
+            });
+    });
+</script>
+
+
+
+{% block content %}{% endblock %}

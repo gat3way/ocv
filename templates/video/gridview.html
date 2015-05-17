@@ -1,0 +1,80 @@
+{% extends "base_user.html" %}
+{% load staticfiles %}
+{% block content %}
+
+<head>
+  <link rel="stylesheet" href="{% static "css/gridview.css" %}" />
+  <link rel="stylesheet" href="{% static "css/jquery.gridster.css" %}" />
+  <script src="{% static "js/grid/dist/jquery.gridster.js" %}"></script>
+  <script src="{% static "js/grid/gridview.js" %}"></script>
+  <style>
+
+    .ui-dialog-titlebar { height: 1em;font-size:10pt; }
+
+    .ui-dialog-content 
+    {
+        font-size: 8pt;
+    }
+
+  </style>
+  <script>
+    var transimg = "{% static "img/transparent.png" %}";
+  </script>
+</head>
+
+
+    <div class="gridster">
+        <ul></ul>
+    </div>
+
+
+    <script type="text/javascript" id="code">
+    var gridster;
+
+    $(function(){
+
+      gridster = $(".gridster > ul").gridster({
+          widget_margins: [3, 3],
+          widget_base_dimensions: [320, 240],
+          max_size_x: 1980,
+          min_cols: 1,
+          max_cols: 5,
+          autogrow_cols: true,
+          resize: {
+            enabled: true
+          },
+          draggable: {
+            stop: function(e, ui, $widget) {
+                // TODO: serialize and save
+                gridster_drag_save();
+            }
+          }
+      }).data('gridster');
+
+
+     load_widgets();
+
+    });
+    </script>
+
+
+
+
+
+<div id="camdialog" title="Choose a sink" class="ui-helper-hidden" style="display:none">
+    <p>Choose a camera sink from the drop-down below</p>
+    <select id="camselect">
+    <option>Select...</option>
+    </select>
+</div>
+
+
+<div id="pantiltdialog" title="PTZ Controls" class="ui-helper-hidden" style="display:none">
+<!--
+<i id="pantilt_left" class="fa fa-arrow-left fa-2x">&nbsp;</i>
+<i id="pantilt_right" class="fa fa-arrow-right fa-2x">&nbsp;</i>
+-->
+<img id="pantilt_img" src="" draggable="false"></img>
+</div>
+
+{% endblock %}

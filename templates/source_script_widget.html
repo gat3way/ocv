@@ -4,9 +4,12 @@
 Drag to define an exclusion zone. Right-click to clear all zones.
 <br><br>
 <canvas id="zone_canvas" width="640" height="480" style="display:block;background:#fff;" style="margin:10px;"></canvas>
-</div>
-
-
+<img id="zone_img" src="#" width="640" height="480" style="display:none"></img>
 
 <script src="{% static "js/source_script_widget.js" %}">
 </script>
+<div style="display:block;background:#fff;margin-left:105px;margin-top:10px;">
+<button name="test" id="test" onclick="motion_test();return false">Test</button>
+<button name="test2" id="cancel_test" onclick="cancel_motion_test();return false">Stop Test</button>
+</div>
+</div>
